@@ -1,0 +1,22 @@
+# sbt
+target/
+project/target/
+project/project/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Metals (Scala LSP)
+.metals/
+.bloop/
+
+# Mac
+.DS_Store
+
+# Coverage
+scoverage-report/
+
+# Logs
+*.log
