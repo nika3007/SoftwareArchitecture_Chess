@@ -7,6 +7,6 @@ trait ChessGameAPI:
   def currentPlayer: Color
   def isGameOver: Boolean
   def winner: Option[Color]
-  def select(pos: Position): (ChessGameAPI, MoveResult)
+  def select(pos: Position): (ChessGameAPI, Either[MoveResult, ChessBoard])
   def save(): GameMemento
   def restore(m: GameMemento): ChessGameAPI

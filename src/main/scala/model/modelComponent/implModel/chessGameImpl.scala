@@ -11,9 +11,11 @@ final class ChessGameImpl(
   override def isGameOver: Boolean  = board.gameOver
   override def winner: Option[Color] = board.winner
 
-  override def select(pos: Position): (ChessGameImpl, MoveResult) =
-    val (nextBoard, result) = board.select(pos)
-    (copy(board = nextBoard), result)
+  override def select(pos: Position): (ChessGameImpl, Either[MoveResult, ChessBoard]) =
+    val result = board.select(pos)
+    result match
+      case Right(nextBoard) => (copy(board = nextBoard), result)
+      case Left(_)          => (this, result)
 
   override def save(): GameMemento =
     GameMemento(board)

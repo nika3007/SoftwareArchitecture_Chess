@@ -13,51 +13,41 @@ final case class ChessBoard(
   def pieceAt(pos: Position): Option[Piece] =
     if pos.isValid then cells(pos.row)(pos.col) else None
 
-  def select(pos: Position): (ChessBoard, MoveResult) =
-    if !pos.isValid then (this, MoveResult.Invalid)
+  def select(pos: Position): Either[MoveResult, ChessBoard] =
+    if !pos.isValid then Left(MoveResult.Invalid)
     else selectedPosition match
       case None =>
-        pieceAt(pos) match
-          case Some(piece) if piece.color == currentPlayer =>
-            (copy(selectedPosition = Some(pos)), MoveResult.Selected)
-          case _ =>
-            (this, MoveResult.Invalid)
+        for
+          piece <- pieceAt(pos).toRight(MoveResult.Invalid)
+          _     <- if piece.color == currentPlayer then Right(()) else Left(MoveResult.Invalid)
+        yield copy(selectedPosition = Some(pos))
 
       case Some(from) =>
-        if from == pos then
-          (copy(selectedPosition = None), MoveResult.Deselected)
+        if from == pos then Right(copy(selectedPosition = None))
         else
           pieceAt(pos) match
             case Some(piece) if piece.color == currentPlayer =>
-              (copy(selectedPosition = Some(pos)), MoveResult.Selected)
+              Right(copy(selectedPosition = Some(pos)))
             case _ =>
               move(from, pos)
 
-  def move(from: Position, to: Position): (ChessBoard, MoveResult) =
-    val piece = pieceAt(from)
-    piece match
-      case None => (this, MoveResult.Invalid)
-      case Some(p) =>
-        if !isValidMove(p, from, to) then (this, MoveResult.Invalid)
-        else
-          val capturedPiece = pieceAt(to)
-          val newCells = cells
-            .updated(from.row, cells(from.row).updated(from.col, None))
-            .updated(to.row, cells(to.row).updated(to.col, Some(p)))
-
-          val isCapture = capturedPiece.isDefined
-          val isKingCaptured = capturedPiece.exists(_.pieceType == PieceType.King)
-
-          val next = copy(
-            cells = newCells,
-            currentPlayer = currentPlayer.opposite,
-            selectedPosition = None,
-            gameOver = isKingCaptured,
-            winner = if isKingCaptured then Some(currentPlayer) else None
-          )
-          if isKingCaptured then (next, MoveResult.GameOver(currentPlayer))
-          else if isCapture then (next, MoveResult.Capture)
-          else (next, MoveResult.Moved)
+  def move(from: Position, to: Position): Either[MoveResult, ChessBoard] =
+    for
+      piece <- pieceAt(from).toRight(MoveResult.Invalid)
+      _     <- if isValidMove(piece, from, to) then Right(()) else Left(MoveResult.Invalid)
+    yield
+      val capturedPiece   = pieceAt(to)
+      val isKingCaptured  = capturedPiece.exists(_.pieceType == PieceType.King)
+      val newCells = cells
+        .updated(from.row, cells(from.row).updated(from.col, None))
+        .updated(to.row, cells(to.row).updated(to.col, Some(piece)))
+      copy(
+        cells          = newCells,
+        currentPlayer  = currentPlayer.opposite,
+        selectedPosition = None,
+        gameOver       = isKingCaptured,
+        winner         = if isKingCaptured then Some(currentPlayer) else None
+      )
 
   def isValidMove(piece: Piece, from: Position, to: Position): Boolean =
     if !to.isValid then return false
@@ -86,7 +76,6 @@ final case class ChessBoard(
       case PieceType.Pawn =>
         val direction = if piece.color == Color.White then -1 else 1
         val startRow  = if piece.color == Color.White then 6 else 1
-
         if dc == 0 && dr == direction && pieceAt(to).isEmpty then true
         else if dc == 0 && dr == 2 * direction
           && from.row == startRow

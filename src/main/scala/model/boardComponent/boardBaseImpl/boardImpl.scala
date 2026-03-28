@@ -5,7 +5,7 @@ import model.{ChessBoard, Position, MoveResult}
 
 final class BoardImpl(val board: ChessBoard) extends BoardAPI:
 
-  override def select(pos: Position): (ChessBoard, MoveResult) =
+  override def select(pos: Position): Either[MoveResult, ChessBoard] =
     board.select(pos)
 
   override def isGameOver: Boolean =

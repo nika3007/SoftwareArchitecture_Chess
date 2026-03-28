@@ -4,6 +4,7 @@ import controller.controllerComponent.{ControllerAPI, GameStatus, Command}
 import model.*
 import model.modelComponent.ChessGameAPI
 import util.Observable
+import scala.util.Try
 
 final class ControllerImpl(private var _game: ChessGameAPI)
   extends Observable
@@ -61,12 +62,13 @@ final class ControllerImpl(private var _game: ChessGameAPI)
     val (nextGame, result) = _game.select(pos)
     _game = nextGame
     _gameStatus = result match
-      case MoveResult.Selected   => GameStatus.PieceSelected
-      case MoveResult.Deselected => GameStatus.Idle
-      case MoveResult.Moved      => GameStatus.Moved
-      case MoveResult.Capture    => GameStatus.Capture
-      case MoveResult.Invalid    => GameStatus.Invalid
-      case MoveResult.GameOver(w) => GameStatus.GameOver(w)
+      case Right(_)                        => GameStatus.Moved
+      case Left(MoveResult.Selected)       => GameStatus.PieceSelected
+      case Left(MoveResult.Deselected)     => GameStatus.Idle
+      case Left(MoveResult.Capture)        => GameStatus.Capture
+      case Left(MoveResult.Invalid)        => GameStatus.Invalid
+      case Left(MoveResult.GameOver(w))    => GameStatus.GameOver(w)
+      case Left(_)                         => GameStatus.Invalid
     notifyObservers
 
   private[controllerBaseImpl] def restoreBoard(board: ChessBoard, status: GameStatus): Unit =
@@ -75,10 +77,10 @@ final class ControllerImpl(private var _game: ChessGameAPI)
     notifyObservers
 
   private def parsePosition(input: String): Option[Position] =
-    input.toLowerCase match
-      case s if s.length == 2 =>
-        val col = s(0) - 'a'
-        val row = 8 - s(1).asDigit
-        val pos = Position(row, col)
-        if pos.isValid then Some(pos) else None
-      case _ => None
+    Try {
+      val col = input(0) - 'a'
+      val row = 8 - input(1).asDigit
+      Position(row, col)
+    }
+    .toOption
+    .filter(_.isValid)
