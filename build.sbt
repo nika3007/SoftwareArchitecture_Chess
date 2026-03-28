@@ -16,7 +16,7 @@ lazy val root = project
 
     // 3. Tests
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % Test,
-    Test / javaOptions += "-Dtest.env=true",
+    //Test / javaOptions += "-Dtest.env=true",
 
     // Compiler-Optionen
     scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Wconf:msg=Implicit parameters should be provided with a `using` clause:s"),
