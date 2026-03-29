@@ -62,14 +62,14 @@ final class ControllerImpl(private var _game: ChessGameAPI)
     val (nextGame, result) = _game.select(pos)
     _game = nextGame
     _gameStatus = result match
-      case Right(_)                        => GameStatus.Moved
-      case Left(MoveResult.Selected)       => GameStatus.PieceSelected
-      case Left(MoveResult.Deselected)     => GameStatus.Idle
-      case Left(MoveResult.Capture)        => GameStatus.Capture
-      case Left(MoveResult.Invalid)        => GameStatus.Invalid
-      case Left(MoveResult.GameOver(w))    => GameStatus.GameOver(w)
-      case Left(_)                         => GameStatus.Invalid
-    notifyObservers
+      case Right(newBoard) if newBoard.selectedPosition.isDefined => GameStatus.PieceSelected
+      case Right(_)                                               => GameStatus.Moved
+      case Left(MoveResult.Selected)                              => GameStatus.PieceSelected
+      case Left(MoveResult.Deselected)                            => GameStatus.Idle
+      case Left(MoveResult.Capture)                               => GameStatus.Capture
+      case Left(MoveResult.Invalid)                               => GameStatus.Invalid
+      case Left(MoveResult.GameOver(w))                           => GameStatus.GameOver(w)
+      case Left(_)                                                => GameStatus.Invalid
 
   private[controllerBaseImpl] def restoreBoard(board: ChessBoard, status: GameStatus): Unit =
     _game = _game.restore(GameMemento(board))

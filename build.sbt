@@ -21,6 +21,7 @@ lazy val root = project
     // Compiler-Optionen
     scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Wconf:msg=Implicit parameters should be provided with a `using` clause:s"),
 
+
     // Fork für JavaFX erforderlich
     run / fork := false,
 
