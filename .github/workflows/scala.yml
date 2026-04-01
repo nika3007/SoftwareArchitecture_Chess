@@ -25,13 +25,13 @@ jobs:
         sudo mv sbt /usr/local/sbt
         echo "/usr/local/sbt/bin" >> $GITHUB_PATH
 
-    - name: Install JavaFX dependencies
+    - name: Install display dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install -y xvfb libgl1-mesa-glx
+        sudo apt-get update -y
+        sudo apt-get install -y xvfb
 
     - name: Run tests with coverage
-      run: xvfb-run sbt clean coverage test coverageReport coveralls
+      run: xvfb-run --auto-servernum sbt clean coverage test coverageReport coveralls
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         COVERALLS_SERVICE_NAME: github-actions
