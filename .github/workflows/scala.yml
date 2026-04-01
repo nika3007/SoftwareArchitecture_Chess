@@ -10,10 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up JDK
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '11'
         distribution: 'temurin'
@@ -21,14 +21,12 @@ jobs:
 
     - name: Install sbt
       run: |
-        sudo apt-get update
-        sudo apt-get install -y curl
         curl -fL https://github.com/sbt/sbt/releases/download/v1.9.7/sbt-1.9.7.tgz | tar xz
         sudo mv sbt /usr/local/sbt
-        export PATH=$PATH:/usr/local/sbt/bin
         echo "/usr/local/sbt/bin" >> $GITHUB_PATH
 
     - name: Run tests with coverage
       run: sbt clean coverage test coverageReport coveralls
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        COVERALLS_SERVICE_NAME: github-actions
