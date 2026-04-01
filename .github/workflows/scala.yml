@@ -15,7 +15,7 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v4
       with:
-        java-version: '11'
+        java-version: '21'
         distribution: 'temurin'
         cache: 'sbt'
 
@@ -25,8 +25,13 @@ jobs:
         sudo mv sbt /usr/local/sbt
         echo "/usr/local/sbt/bin" >> $GITHUB_PATH
 
+    - name: Install JavaFX dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y xvfb libgl1-mesa-glx
+
     - name: Run tests with coverage
-      run: sbt clean coverage test coverageReport coveralls
+      run: xvfb-run sbt clean coverage test coverageReport coveralls
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
         COVERALLS_SERVICE_NAME: github-actions

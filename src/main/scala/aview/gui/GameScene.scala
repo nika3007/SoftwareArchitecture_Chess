@@ -9,9 +9,10 @@ import scalafx.geometry.{Insets, Pos}
 import scalafx.Includes._
 import model._
 
-case class GameScene(gui: GUI, controller: ControllerAPI):
+object GameScene:
+  var legalMovePositions: Set[Position] = Set.empty
 
-  private var legalMovePositions: Set[Position] = Set.empty
+case class GameScene(gui: GUI, controller: ControllerAPI):
 
   private val statusLabel = new Label("White's turn") {
     font = Font.font("Georgia", 16)
@@ -70,19 +71,19 @@ case class GameScene(gui: GUI, controller: ControllerAPI):
         new Button("Undo") {
           style = buttonStyle("#555555")
           onAction = _ =>
-            legalMovePositions = Set.empty
+            GameScene.legalMovePositions = Set.empty
             controller.undo()
         },
         new Button("Redo") {
           style = buttonStyle("#555555")
           onAction = _ =>
-            legalMovePositions = Set.empty
+            GameScene.legalMovePositions = Set.empty
             controller.redo()
         },
         new Button("New Game") {
           style = buttonStyle("#f0d9b5")
           onAction = _ =>
-            legalMovePositions = Set.empty
+            GameScene.legalMovePositions = Set.empty
             gui.showGame()
         }
       )
@@ -140,7 +141,7 @@ case class GameScene(gui: GUI, controller: ControllerAPI):
         val piece      = controller.board.cells(row)(col)
         val pos        = Position(row, col)
         val isSelected = controller.board.selectedPosition.contains(pos)
-        val isLegal    = legalMovePositions.contains(pos)
+        val isLegal    = GameScene.legalMovePositions.contains(pos)
 
         val baseColor =
           if isSelected then "#aaa23a"
@@ -162,12 +163,15 @@ case class GameScene(gui: GUI, controller: ControllerAPI):
           """
           onAction = _ =>
             controller.board.selectedPosition match
-              case Some(_) =>
-                legalMovePositions = Set.empty
-                controller.select(pos)
               case None =>
+                GameScene.legalMovePositions = controller.board.legalMoves(pos).toSet
                 controller.select(pos)
-                legalMovePositions = controller.board.legalMoves(pos).toSet
+              case Some(from) if from == pos =>
+                GameScene.legalMovePositions = Set.empty
+                controller.select(pos)
+              case Some(_) =>
+                GameScene.legalMovePositions = Set.empty
+                controller.select(pos)
         }
 
         GridPane.setRowIndex(btn, row)

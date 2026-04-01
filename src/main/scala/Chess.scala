@@ -20,12 +20,10 @@ object Chess:
     mode match
       case "gui" =>
         GUI.launch(controller)
-
       case "both" =>
         new Thread(() =>
           GUI.launch(controller)
         ).start()
         ChessTui(controller).run()
-
       case _ =>
         ChessTui(controller).run()

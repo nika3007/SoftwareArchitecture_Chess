@@ -4,7 +4,7 @@ import scalafx.application.{JFXApp3, Platform}
 import scalafx.application.JFXApp3.PrimaryStage
 import scalafx.scene.Scene
 import scalafx.scene.layout.BorderPane
-import controller.controllerComponent.{ControllerAPI, GameStatus}
+import controller.controllerComponent.ControllerAPI
 import util.Observer
 
 object GUI:
@@ -18,13 +18,11 @@ class GUI(val controller: ControllerAPI) extends JFXApp3 with Observer:
 
   override def start(): Unit =
     controller.add(this)
-
     stage = new PrimaryStage {
       title = "Chess"
       scene = new Scene(rootPane, 700, 700)
       resizable = true
     }
-
     showStartMenu()
 
   def showStartMenu(): Unit =
