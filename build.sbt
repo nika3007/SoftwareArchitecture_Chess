@@ -8,23 +8,27 @@ lazy val root = project
 
     scalaVersion := scala3Version,
 
-    // 1. ScalaFX für die GUI
-    libraryDependencies += "org.scalafx" %% "scalafx" % "20.0.0-R31",
+    libraryDependencies += "org.scalafx" %% "scalafx" % "23.0.1-R34",
 
-    // 2. Google Guice für Dependency Injection
     libraryDependencies += "net.codingwell" %% "scala-guice" % "7.0.0",
-
-    // 3. Tests
     libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.18" % Test,
-    //Test / javaOptions += "-Dtest.env=true",
 
-    // Compiler-Optionen
-    scalacOptions ++= Seq("-deprecation", "-feature", "-unchecked", "-Wconf:msg=Implicit parameters should be provided with a `using` clause:s"),
+    scalacOptions ++= Seq(
+      "-deprecation",
+      "-feature",
+      "-unchecked",
+      "-Wconf:msg=Implicit parameters should be provided with a `using` clause:s"
+    ),
 
-    // Fork für JavaFX erforderlich
     run / fork := false,
 
-    // 4. sbt Scoverage Settings
+    assembly / mainClass := Some("Chess"),
+    assembly / assemblyMergeStrategy := {
+      case PathList("module-info.class") => MergeStrategy.discard
+      case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+      case x => MergeStrategy.first
+    },
+
     coverageEnabled := true,
     coverageMinimumStmtTotal := 50,
     coverageFailOnMinimum := false,

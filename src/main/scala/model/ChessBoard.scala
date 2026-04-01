@@ -13,6 +13,17 @@ final case class ChessBoard(
   def pieceAt(pos: Position): Option[Piece] =
     if pos.isValid then cells(pos.row)(pos.col) else None
 
+  def legalMoves(pos: Position): List[Position] =
+    pieceAt(pos) match
+      case None => List.empty
+      case Some(piece) =>
+        (for
+          row <- 0 until 8
+          col <- 0 until 8
+          to = Position(row, col)
+          if isValidMove(piece, pos, to)
+        yield to).toList
+
   def select(pos: Position): Either[MoveResult, ChessBoard] =
     if !pos.isValid then Left(MoveResult.Invalid)
     else selectedPosition match
@@ -36,17 +47,17 @@ final case class ChessBoard(
       piece <- pieceAt(from).toRight(MoveResult.Invalid)
       _     <- if isValidMove(piece, from, to) then Right(()) else Left(MoveResult.Invalid)
     yield
-      val capturedPiece   = pieceAt(to)
-      val isKingCaptured  = capturedPiece.exists(_.pieceType == PieceType.King)
+      val capturedPiece  = pieceAt(to)
+      val isKingCaptured = capturedPiece.exists(_.pieceType == PieceType.King)
       val newCells = cells
         .updated(from.row, cells(from.row).updated(from.col, None))
         .updated(to.row, cells(to.row).updated(to.col, Some(piece)))
       copy(
-        cells          = newCells,
-        currentPlayer  = currentPlayer.opposite,
+        cells            = newCells,
+        currentPlayer    = currentPlayer.opposite,
         selectedPosition = None,
-        gameOver       = isKingCaptured,
-        winner         = if isKingCaptured then Some(currentPlayer) else None
+        gameOver         = isKingCaptured,
+        winner           = if isKingCaptured then Some(currentPlayer) else None
       )
 
   def isValidMove(piece: Piece, from: Position, to: Position): Boolean =
